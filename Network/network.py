@@ -15,40 +15,32 @@ import numpy as np
 
 
 class Network:
-    inputLayer = None
-    outputLayer = None
+    inputLayer = None       # For Shortcut
+    outputLayer = None      # For Shortcut
     layers = list()
     bounds = list()
 
-    # An Idea is to include I/O in the tuple
-    def __init__(self, nb_inputs, nb_outputs, tuple_size_layers):
+    # Tuple[0] must be the size of inputs
+    # Tuple[-1] muste be the size of outputs
+    def __init__(self, tuple_size_layers):
+        """The Tuple must"""
+        if len(tuple_size_layers) < 2:
+            raise BadNetworkSizeException(len(tuple_size_layers))
 
-        # Manually set I/O
-        self.inputLayer = Layer(nb_inputs)
-        self.outputLayer = Layer(nb_outputs)
+        # Build Inner Layers
+        for i in range(len(tuple_size_layers)):
+            self.Layers.append(Layer(i))
 
-        if tuple_size_layers is None:
-            # Manually set I/O
-            self.bounds.append(Bounds(nb_inputs, nb_outputs))
-        else:
-            # Manually set IN
-            self.bounds.append(Bounds(nb_inputs, tuple_size_layers[0]))
-
-            # Build Inner Layers
-            for i in range(len(tuple_size_layers)):
-                self.Layers.append(Layer(i))
-
-            # Since Bounds 0 and N are set manualy because they are linked to
-            # I/O we can iterate over N-2
-            for i in tuple_size_layers[1:-1]:
-                self.bounds.append(Bounds(tuple_size_layers[i],
-                                          tuple_size_layers[i+1]))
-            # Manually set OUT
-            self.bounds.append(Bounds(tuple_size_layers[-1], nb_outputs))
+        # For N Layers (including I/0) there are N-1 Bounds
+        for i in range(len(tuple_size_layers)-1):
+            bound = Bounds(tuple_size_layers[i], tuple_size_layers[i+1])
+            self.bounds.append(bound)
+            self.layers[i].bound = bound
+        # Enables Quick Access
+        self.inputLayer = self.layers[0]
+        self.outputLayer = self.layers[-1]
 
     def clearNodes(self):
-        self.inputLayer.clearNodes()
-        self.outputLayer.clearNodes()
         for i in self.layers:
             i.clearNodes()
 
@@ -60,6 +52,8 @@ class Network:
 
 
 class Layer:
+    bound = None       # If None then Layer is the Output Layer
+
     def __init__(self, size):
         self.size = size
         self.nodes = np.zeroes(size)
@@ -72,3 +66,9 @@ class Bounds:
     def __init__(self, sizein, sizeout):
         self.bounds = np.random.random((sizein, sizeout))
         self.bias = np.random.random(sizeout)
+
+
+class BadNetworkSizeException(Exception):
+    def __init__(self, size):
+        self.msg = \
+            "The Number of layer must be at least 2, and not " + str(size)
