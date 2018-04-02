@@ -43,9 +43,13 @@ def extractImageFile(path_img, path_labels):
     byte = f.read(1)
     i = 0
     while byte != EOF:
-        data[i] = int.from_bytes(byte, byteorder="big")
+        data[i] = nomalyzeByte(int.from_bytes(byte, byteorder="big"))
         byte = f.read(1)
         i += 1
     dataset = DataSet(number_of_images, labels, row, col, data)
     f.close()
     return dataset
+
+
+def nomalyzeByte(byte):
+    return byte/255.0
