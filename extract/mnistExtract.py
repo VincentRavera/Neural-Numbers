@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-from dataset.dataset import dataset
+from dataset.dataset import DataSet
+import numpy as np
 
 
 def extractLabelFile(path):
@@ -14,8 +15,9 @@ def extractLabelFile(path):
     # ........
     # xxxx     unsigned byte   ??               label
     # The labels values are 0 to 9.
-    data = dataset()
-    return data
+    f = open(path, "rb")
+    f.close()
+    return 0
 
 
 def extractImageFile(path_img, path_labels):
@@ -32,9 +34,18 @@ def extractImageFile(path_img, path_labels):
     # HEADER
     int.from_bytes(f.read(4), byteorder="big")
     number_of_images = int.from_bytes(f.read(4), byteorder="big")
-    rows = int.from_bytes(f.read(4), byteorder="big")
-    cols = int.from_bytes(f.read(4), byteorder="big")
+    row = int.from_bytes(f.read(4), byteorder="big")
+    col = int.from_bytes(f.read(4), byteorder="big")
     labels = extractLabelFile(path_labels)
     # DATA
-    data = dataset(number_of_images, rows, cols, labels)
-    return data
+    data = np.zeros(number_of_images*row*col)
+    EOF = b''
+    byte = f.read(1)
+    i = 0
+    while byte != EOF:
+        data[i] = int.from_bytes(byte, byteorder="big")
+        byte = f.read(1)
+        i += 1
+    dataset = DataSet(number_of_images, labels, row, col, data)
+    f.close()
+    return dataset
