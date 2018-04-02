@@ -16,8 +16,20 @@ def extractLabelFile(path):
     # xxxx     unsigned byte   ??               label
     # The labels values are 0 to 9.
     f = open(path, "rb")
+    # HEADER
+    int.from_bytes(f.read(4), byteorder="big")
+    number_of_images = int.from_bytes(f.read(4), byteorder="big")
+    # DATA
+    output = np.zeros(number_of_images)
+    EOF = b''
+    byte = f.read(1)
+    i = 0
+    while byte != EOF:
+        output[i] = int.from_bytes(byte, byteorder="big")
+        byte = f.read(1)
+        i += 1
     f.close()
-    return 0
+    return output
 
 
 def extractImageFile(path_img, path_labels):
