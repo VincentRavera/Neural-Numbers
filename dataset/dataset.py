@@ -27,9 +27,11 @@ class DataSet:
         self.labels = labels
 
     def getLabel(self, image_number):
+        """Returns answer."""
         return self.labels[image_number]
 
     def getData(self, image_number):
+        """Returns a vector of data."""
         if image_number < self.nb_img:
             offset = image_number*self.row*self.col
             try:
@@ -41,9 +43,10 @@ class DataSet:
             raise OutOfBoundDataSet()
 
     def getImage(self, image_number):
+        """Return a 2x2 representation of the data."""
         output = np.zeros((self.row, self.col))
         data = self.getData(image_number)
         for i in range(self.row):
             for j in range(self.col):
-                output[i, j] = data[self.row*i+self.col*j]
+                output[i, j] = data[i+self.row*j]
         return output
